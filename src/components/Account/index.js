@@ -1,65 +1,59 @@
-import {withRouter, Redirect} from 'react-router-dom'
-
-import Cookies from 'js-cookie'
-
+import MovieContext from '../../context/MovieContext'
 import Header from '../Header'
-
 import Footer from '../Footer'
-
 import './index.css'
 
-const Account = props => {
-  const removeToken = () => {
-    const {history} = props
-    Cookies.remove('jwt_token')
-    history.replace('/login')
-  }
-  const token = Cookies.get('jwt_token')
-  if (token === undefined) {
-    return <Redirect to="/login" />
-  }
+const Account = props => (
+  <MovieContext.Consumer>
+    {value => {
+      const {username, password, triggerLogout} = value
 
-  return (
-    <div className="account-container">
-      <div className="header-container">
-        <Header />
-      </div>
-      <div className="details-container">
-        <div className="account-details-container">
-          <h1 className="account-heading">Account</h1>
-          <hr className="hr-element" />
-          <div className="membership-container">
-            <p className="membership">Member ship</p>
-            <div className="email-password-container">
-              <p className="email">rahul@gmail.com</p>
-              <p className="password">Password : ********</p>
+      const onClickLogout = () => {
+        triggerLogout(props)
+      }
+
+      const hiddenPassword = '*'.repeat(password.length)
+
+      return (
+        <div className="account-container">
+          <Header />
+          <div className="bg-container">
+            <div className="account-sub-container">
+              <h1 className="account-heading">Account</h1>
+              <hr className="hr-line" />
+              <div className="name-password-container">
+                <p className="member-ship">Member ship</p>
+                <div className="user-name-container-account">
+                  <p className="user-name-para">{username}</p>
+                  <div className="password-container-account">
+                    <p className="password-para">Password : {hiddenPassword}</p>
+                  </div>
+                </div>
+              </div>
+              <hr className="hr-line" />
+              <div className="plan-container">
+                <p className="member-ship">Plan details</p>
+                <p className="plan-para">Premium</p>
+                <div className="quality-container">
+                  <p className="quality-para">Ultra HD</p>
+                </div>
+              </div>
+              <hr className="hr-line" />
+            </div>
+            <div className="btn-logout-container">
+              <button
+                className="btn-logout"
+                type="button"
+                onClick={onClickLogout}
+              >
+                Logout
+              </button>
             </div>
           </div>
-          <hr className="hr-element" />
-          <div className="plan-details-container">
-            <p className="details">Plan details</p>
-            <div className="premium-container">
-              <p className="premium">Premium</p>
-              <p className="quality">Ultra Hd</p>
-            </div>
-          </div>
-          <hr className="hr-element" />
-          <div className="button-container">
-            <button
-              type="button"
-              className="logout-button"
-              onClick={removeToken}
-            >
-              Logout
-            </button>
-          </div>
+          <Footer />
         </div>
-      </div>
-      <div className="account-footer">
-        <Footer />
-      </div>
-    </div>
-  )
-}
-
-export default withRouter(Account)
+      )
+    }}
+  </MovieContext.Consumer>
+)
+export default Account

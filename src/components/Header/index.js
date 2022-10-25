@@ -1,123 +1,168 @@
+import {withRouter, Link} from 'react-router-dom'
 import {Component} from 'react'
-
-import {Link} from 'react-router-dom'
-
-import {CgPlayList} from 'react-icons/cg'
-import {RiCloseCircleLine} from 'react-icons/ri'
-
 import {HiOutlineSearch} from 'react-icons/hi'
+import {AiFillCloseCircle} from 'react-icons/ai'
+import {CgPlayList} from 'react-icons/cg'
 
 import './index.css'
 
 class Header extends Component {
-  state = {showRoutingSection: false}
+  state = {isMenuClicked: false, searchValue: ''}
 
-  showBottomBar = () => {
-    this.setState(prevState => ({
-      showRoutingSection: !prevState.showRoutingSection,
-    }))
+  getSearchInput = event => {
+    this.setState({searchValue: event.target.value})
+  }
+
+  onSearch = () => {
+    const {getSearchMoviesData} = this.props
+    const {searchValue} = this.state
+    if (searchValue !== '') {
+      getSearchMoviesData(searchValue)
+    }
+  }
+
+  onClickMore = () => {
+    this.setState({
+      isMenuClicked: true,
+    })
+  }
+
+  onClickCloseMore = () => {
+    this.setState({isMenuClicked: false})
   }
 
   render() {
-    const {showRoutingSection} = this.state
+    const {searchValue} = this.state
+    const {searchRoute} = this.props
+    const {isMenuClicked} = this.state
+    const {match} = this.props
+    const {path} = match
+    let homeClassName
+    let popularClassName
+    let accountClassName
+
+    switch (path) {
+      case '/popular':
+        homeClassName = 'not-selected'
+        popularClassName = 'selected'
+        accountClassName = 'not-selected'
+        break
+      case '/profile':
+        homeClassName = 'not-selected'
+        popularClassName = 'not-selected'
+        accountClassName = 'selected'
+        break
+      case '/search':
+        homeClassName = 'not-selected'
+        popularClassName = 'not-selected'
+        accountClassName = 'not-selected'
+        break
+      case '/':
+        homeClassName = 'selected'
+        popularClassName = 'not-selected'
+        accountClassName = 'not-selected'
+        break
+      default:
+        homeClassName = 'not-selected'
+        popularClassName = 'not-selected'
+        accountClassName = 'not-selected'
+        break
+    }
+
     return (
-      <div>
-        <nav className="header-element">
-          <div className="logo-container">
-            <div className="top-section">
-              <Link to="/" className="link-el">
-                <img
-                  src="https://res.cloudinary.com/drwe3lgdh/image/upload/v1656292333/Group_7399_csyagi.png"
-                  className="movies"
-                  alt="website logo"
-                />
+      <nav className="main-container">
+        <div className="nav-container">
+          <div className="align-container">
+            <Link to="/" className="link">
+              <img
+                src="https://res.cloudinary.com/duv0mhzrm/image/upload/v1665899170/Group_7399_vwxbql.png"
+                alt="website logo"
+                className="web-site-logo-header"
+              />
+            </Link>
+            <ul className="logo-home-popular-container">
+              <Link to="/" className="link">
+                <li className={`home-link ${homeClassName}`}>Home</li>
               </Link>
-            </div>
-            <ul className="categories-list">
-              <li className="category">
-                <Link className="link-element" to="/">
-                  Home
-                </Link>
-              </li>
-              <li className="category">
-                <Link className="link-element" to="/popular">
-                  Popular
-                </Link>
-              </li>
+              <Link to="/popular" className="link">
+                <li className={`home-link ${popularClassName}`}>Popular</li>
+              </Link>
             </ul>
           </div>
-          <div className="profile-container">
-            <Link className="link-element" to="/search">
-              <button
-                type="button"
-                className="search-button"
-                testid="searchButton"
-              >
-                <HiOutlineSearch className="search-icon" />
-              </button>
-            </Link>
-            <div className="account-container">
-              <Link className="link-element" to="/account">
-                <img
-                  src="https://res.cloudinary.com/drwe3lgdh/image/upload/v1656293053/Avatar_szfesy.png"
-                  className="person"
-                  alt="profile"
+          <ul className="logo-home-popular-container">
+            {searchRoute ? (
+              <div className="searchContainer">
+                <input
+                  type="search"
+                  className="search-input"
+                  value={searchValue}
+                  onChange={this.getSearchInput}
+                  placeholder="Search"
                 />
-              </Link>
-            </div>
-            <div className="play-icon-container">
-              <div>
-                <Link className="link-element" to="/search">
+                <button
+                  onClick={this.onSearch}
+                  type="button"
+                  className="search-icon-clicked btn-true"
+                  testid="searchButton"
+                >
+                  <HiOutlineSearch className="search-icon-in-search" />
+                </button>
+              </div>
+            ) : (
+              <Link to="/search" className="link">
+                <li>
                   <button
-                    className="button"
                     type="button"
+                    className="btn-search"
                     testid="searchButton"
                   >
-                    <HiOutlineSearch className="hi-search" />
+                    <HiOutlineSearch className="search-icon" />
                   </button>
-                </Link>
-              </div>
-              <button className="play" type="button">
-                <CgPlayList
-                  className="cg-play-icon"
-                  onClick={this.showBottomBar}
+                </li>
+              </Link>
+            )}
+
+            <Link to="/account" className="link">
+              <li>
+                <img
+                  src="https://res.cloudinary.com/duv0mhzrm/image/upload/v1665994997/Avatar_hzuzbt.png"
+                  alt="profile"
+                  className="profile"
                 />
+              </li>
+            </Link>
+            <li>
+              <button
+                type="button"
+                className="btn-more btn-search"
+                onClick={this.onClickMore}
+              >
+                <CgPlayList className="search-icon" />
               </button>
-            </div>
-          </div>
-        </nav>
-        <div>
-          {showRoutingSection === true ? (
-            <div className="header-bottom-container">
-              <ul className="routing-container">
-                <li className="category">
-                  <Link className="link-element" to="/">
-                    Home
-                  </Link>
-                </li>
-                <li className="category">
-                  <Link className="link-element" to="/popular">
-                    Popular
-                  </Link>
-                </li>
-                <li className="category">
-                  <Link className="link-element" to="/account">
-                    Account
-                  </Link>
-                </li>
-              </ul>
-              <button className="close-button" type="button">
-                <RiCloseCircleLine
-                  className="cg-close-icon"
-                  onClick={this.showBottomBar}
-                />
-              </button>
-            </div>
-          ) : null}
+            </li>
+          </ul>
         </div>
-      </div>
+
+        {isMenuClicked && (
+          <ul className="more-menu-container">
+            <Link to="/" className="link">
+              <li className={`more-menu-para ${homeClassName}`}>Home</li>
+            </Link>
+            <Link to="/popular" className="link">
+              <li className={`more-menu-para ${popularClassName}`}>Popular</li>
+            </Link>
+            <Link to="/account" className="link">
+              <li className={`more-menu-para ${accountClassName}`}>Account</li>
+            </Link>
+            <AiFillCloseCircle
+              className="crosser"
+              onClick={this.onClickCloseMore}
+            />
+          </ul>
+        )}
+      </nav>
     )
   }
 }
 
-export default Header
+export default withRouter(Header)

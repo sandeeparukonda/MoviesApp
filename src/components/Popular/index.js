@@ -1,125 +1,116 @@
 import {Component} from 'react'
-
-import {Link, Redirect} from 'react-router-dom'
-
 import Loader from 'react-loader-spinner'
-
 import Cookies from 'js-cookie'
-
 import Header from '../Header'
-
+import ItemPopular from '../ItemPopular'
 import Footer from '../Footer'
-
 import './index.css'
 
-const apiStatus = {
-  initial: 'initial',
-  progress: 'progress',
-  success: 'success',
-  failure: 'failure',
+const apiStatusConstant = {
+  initial: 'INITIAL',
+  inprogress: 'INPROGRESS',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
 }
 
 class Popular extends Component {
-  state = {popularMovies: [], api: apiStatus.initial}
+  state = {apiStatusPopular: apiStatusConstant.initial, popularMovieData: []}
 
   componentDidMount() {
-    this.getPopularMovies()
+    this.getPopularData()
   }
 
-  getPopularMovies = async () => {
-    this.setState({api: apiStatus.progress})
+  getPopularData = async () => {
+    this.setState({apiStatusPopular: apiStatusConstant.inprogress})
     const url = 'https://apis.ccbp.in/movies-app/popular-movies'
-    const token = Cookies.get('jwt_token')
+    const jwtToken = Cookies.get('jwt_token')
     const options = {
-      method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${jwtToken}`,
       },
+      method: 'GET',
     }
     const response = await fetch(url, options)
-    if (response.ok === true) {
-      const data = await response.json()
-      const formatData = data.results.map(each => ({
-        backdropPath: each.backdrop_path,
-        id: each.id,
-        overview: each.overview,
-        posterPath: each.poster_path,
-        title: each.title,
-      }))
+    const data = await response.json()
 
-      this.setState({popularMovies: formatData, api: apiStatus.success})
+    if (response.ok === true) {
+      const updateData = data.results.map(eachData => ({
+        id: eachData.id,
+        backDropPath: eachData.backdrop_path,
+        overview: eachData.overview,
+        posterPath: eachData.poster_path,
+        title: eachData.title,
+      }))
+      this.setState({
+        popularMovieData: updateData,
+        apiStatusPopular: apiStatusConstant.success,
+      })
     } else {
-      this.setState({api: apiStatus.failure})
+      this.setState({apiStatusPopular: apiStatusConstant.failure})
     }
   }
 
-  loadingView = () => (
-    <div className="loader-container" testid="loader">
-      <Loader type="TailSpin" color="#D81F26" height={50} width={50} />
-    </div>
-  )
+  renderInSuccessViewOfPopular = () => {
+    const {popularMovieData} = this.state
 
-  failureView = () => (
-    <div className="failure-view-container">
-      <img
-        src="https://res.cloudinary.com/drwe3lgdh/image/upload/v1656390948/Background-Complete_ynhv7p.png"
-        className="fail-img"
-        alt="failure view"
-      />
-      <p className="failure-para">Something went wrong. Please try again</p>
-      <button
-        type="button"
-        className="failure-button"
-        onClick={this.getPopularMovies}
-      >
-        Try Again
-      </button>
-    </div>
-  )
-
-  successView = () => {
-    const {popularMovies} = this.state
     return (
-      <div className="popular-success-container">
-        <ul className="popular-movies-list-container">
-          {popularMovies.map(i => (
-            <li className="popular-movies-list-item" key={i.id}>
-              <Link className="link-element" to={`/movies/${i.id}`}>
-                <img src={i.posterPath} alt={i.title} className="movie-img" />
-              </Link>
-            </li>
+      <div className="popular-list-container">
+        <ul className="popular-ul-container">
+          {popularMovieData.map(eachPopular => (
+            <ItemPopular key={eachPopular.id} itemDetails={eachPopular} />
           ))}
         </ul>
       </div>
     )
   }
 
-  finalRender = () => {
-    const {api} = this.state
-    switch (api) {
-      case apiStatus.progress:
-        return this.loadingView()
-      case apiStatus.success:
-        return this.successView()
-      case apiStatus.failure:
-        return this.failureView()
+  renderInFailureViewOfPopular = () => (
+    <div className="loader-container-popular">
+      <img
+        src="https://res.cloudinary.com/duv0mhzrm/image/upload/v1665899171/Background-Complete_wschfx.png"
+        alt="failure view"
+        className="error-image"
+      />
+      <p className="error-popular-para">
+        Something went wrong, Please try again.
+      </p>
+      <button
+        type="button"
+        className="btn-popular"
+        onClick={this.getPopularData}
+      >
+        Try Again
+      </button>
+    </div>
+  )
+
+  renderLoadingViewOfPopular = () => (
+    <div className="loader-container-popular" testid="loader">
+      <Loader type="TailSpin" color="#D81F26" height={50} width={50} />
+    </div>
+  )
+
+  renderPopularData = () => {
+    const {apiStatusPopular} = this.state
+
+    switch (apiStatusPopular) {
+      case apiStatusConstant.inprogress:
+        return this.renderLoadingViewOfPopular()
+      case apiStatusConstant.success:
+        return this.renderInSuccessViewOfPopular()
+      case apiStatusConstant.failure:
+        return this.renderInFailureViewOfPopular()
       default:
         return null
     }
   }
 
   render() {
-    const token = Cookies.get('jwt_token')
-    if (token === undefined) {
-      return <Redirect to="/login" />
-    }
     return (
       <div className="popular-container">
         <Header />
-        {this.finalRender()}
-        <div className="footer">
-          <Footer />
-        </div>
+        {this.renderPopularData()}
+        <Footer />
       </div>
     )
   }
